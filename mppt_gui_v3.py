@@ -3,6 +3,7 @@ import pickle
 import re
 import shutil
 import tkinter as tk
+import uuid
 from tkinter import filedialog, messagebox
 
 import comtypes.client
@@ -168,8 +169,9 @@ def select_video_file():
 
 def run_processing():
     ppt_path = ppt_entry.get()
+    unique = str(uuid.uuid4()).split('-')[0]
     ppt_folder = os.path.dirname(ppt_path)
-    image_directory = ppt_folder + "//slides"
+    image_directory = ppt_folder + "//slides_" + unique
     video_path = video_entry.get()
     output_path = ppt_folder + "//검수_" + os.path.basename(ppt_path)
     

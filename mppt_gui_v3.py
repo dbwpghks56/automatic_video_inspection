@@ -187,7 +187,7 @@ def run_processing():
         bottom = int(crop_bottom_entry.get())
         
         pptx_to_images(ppt_path, image_directory)
-        process_video_and_annotate_ppt(ppt_path, video_path, image_directory, output_path, ocr_area=(left, top, right, bottom))
+        process_video_and_annotate_ppt(ppt_path, video_path, image_directory, output_path, ocr_area=(left, top, right, bottom), cache_file=f'frame_texts_cache_{unique}.pkl')
         
         os.remove('frame_texts_cache.pkl')
         shutil.rmtree(image_directory)

@@ -2,6 +2,7 @@ import os
 import pickle
 import re
 import shutil
+import urllib.parse
 import uuid
 
 import comtypes.client
@@ -186,6 +187,32 @@ def process():
         return send_file(output_file, as_attachment=True)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# 저장할 경로 설정
+UPLOAD_FOLDER = 'uploads'
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+@app.route('/upload_video', methods=['POST'])
+def upload_video():
+    # 청크를 받을 임시 파일 생성
+    file_name = request.headers.get('File-Name')
+    file_name = urllib.parse.unquote(file_name)
+    file_path = os.path.join(UPLOAD_FOLDER, file_name)
+
+    # 청크 데이터 가져오기
+    with open(file_path, 'ab') as f:  # 'ab' 모드로 파일을 열어 데이터를 추가
+        f.write(request.data)
+    
+    # 현재 받은 청크 수와 전체 청크 수 확인
+    chunk_number = int(request.headers.get('Chunk-Number'))
+    total_chunks = int(request.headers.get('Total-Chunks'))
+
+    # 모든 청크가 전송된 경우에만 경로를 반환
+    if chunk_number == total_chunks:
+        return jsonify({"file_path": file_path}), 200
+    else:
+        return jsonify({"message": f"Chunk {chunk_number} received"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

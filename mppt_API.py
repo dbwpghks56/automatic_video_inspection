@@ -10,6 +10,7 @@ import easyocr
 import numpy as np
 import pythoncom
 from flask import Flask, jsonify, request, send_file
+from flask_cors import CORS
 from PIL import Image
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -20,6 +21,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
+CORS(app)
 
 # EasyOCR 설정
 reader = easyocr.Reader(['en', 'ko'], gpu=True)  # 영어와 한국어 설정
@@ -186,4 +188,4 @@ def process():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

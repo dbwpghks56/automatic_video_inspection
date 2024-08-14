@@ -4,6 +4,7 @@ import re
 import shutil
 import urllib.parse
 import uuid
+from pathlib import Path
 
 import comtypes.client
 import cv2
@@ -158,17 +159,16 @@ def process_video_and_annotate_ppt(ppt_path, video_path, image_directory, output
 @app.route('/process', methods=['POST'])
 def process():
     ppt_file = request.files['ppt_file']
-    video_file = request.files['video_file']
+    video_file = request.form.get('video_file_path')
     left = int(request.form.get('left', 0))
     top = int(request.form.get('top', 90))
     right = int(request.form.get('right', 1080))
     bottom = int(request.form.get('bottom', 600))
     
     ppt_path = os.path.join(os.getcwd(), ppt_file.filename)
-    video_path = os.path.join(os.getcwd(), video_file.filename)
+    video_path = video_file
     
     ppt_file.save(ppt_path)
-    video_file.save(video_path)
     
     unique = str(uuid.uuid4()).split('-')[0]
     image_directory = os.path.join(os.getcwd(), "slides_" + unique)
@@ -182,11 +182,21 @@ def process():
         os.remove(f'frame_texts_cache_{unique}.pkl')
         shutil.rmtree(image_directory) 
         os.remove(ppt_path)
-        os.remove(video_path)
         
         return send_file(output_file, as_attachment=True)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/video_list', methods=['GET'])
+def list_video_files_in_directory(directory):
+    video_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.wmv']
+    path = Path(directory)
+    if path.exists() and path.is_dir():
+        video_files = [file for file in path.iterdir() if file.suffix.lower() in video_extensions]
+        for video in video_files:
+            print(video.name + " :: " + str(video.resolve()))
+    else:
+        print(f"The directory {directory} does not exist or is not a directory.")
 
 # 저장할 경로 설정
 UPLOAD_FOLDER = 'uploads'

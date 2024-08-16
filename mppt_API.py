@@ -188,15 +188,24 @@ def process():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/video_list', methods=['GET'])
-def list_video_files_in_directory(directory):
+def list_video_files_in_directory():
     video_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.wmv']
-    path = Path(directory)
+    path = Path('uploads')
+    fileList = []
+    fileData = {}
     if path.exists() and path.is_dir():
         video_files = [file for file in path.iterdir() if file.suffix.lower() in video_extensions]
         for video in video_files:
-            print(video.name + " :: " + str(video.resolve()))
+            fileData['name'] = video.name
+            fileData['path'] = str(video.resolve())
+            fileData['time'] = video.stat().st_mtime
+            fileData['size'] = video.stat().st_size
+            fileData['created'] = video.stat().st_ctime
+            fileList.append(fileData)
     else:
-        print(f"The directory {directory} does not exist or is not a directory.")
+        return jsonify({"error": f"The directory {'uploads'} does not exist or is not a directory."}), 404
+    
+    return jsonify(fileList, 200)
 
 # 저장할 경로 설정
 UPLOAD_FOLDER = 'uploads'
